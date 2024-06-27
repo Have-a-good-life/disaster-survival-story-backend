@@ -18,4 +18,4 @@ phases:
 
 artifacts:
   files:
-    - build/libs/*.war
+    - *.war
