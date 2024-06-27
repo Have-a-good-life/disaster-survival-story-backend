@@ -18,18 +18,15 @@ import com.team1.main.domain.Situation;
 import com.team1.main.repository.BestReactionRepository;
 import com.team1.main.repository.ReactionMapRepository;
 import com.team1.main.repository.SituationRepository;
-import com.team1.main.response.AWSLambdaRequest;
+import com.team1.main.response.AWSLambdaProposeRequest;
+import com.team1.main.response.AWSLambdaQuestionRequest;
 import com.team1.main.response.EvaluateUserReactionRequest;
 import com.team1.main.response.EvaluateUserReactionResponse;
 
 import lombok.RequiredArgsConstructor;
 
-import org.json.simple.parser.JSONParser;
-import org.json.simple.JSONObject;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping("/v1")
@@ -66,23 +63,21 @@ public class Controller {
 	@ResponseBody
 	public ResponseEntity<EvaluateUserReactionResponse> evaluateUserReaction(
 		@RequestBody EvaluateUserReactionRequest request) throws JsonProcessingException {
-		System.out.println(request.situation_id);
-		System.out.println(request.user_reaction);
 		List<ReactionMap> reactionMaps = reactionMapRepository.findBySituationId(request.situation_id);
 		Situation situation = situationRepository.findById(request.situation_id).orElse(null);
-		if (situation == null) return ResponseEntity.noContent().build();
-		AWSLambdaRequest awsLambdaRequest = new AWSLambdaRequest();
-		awsLambdaRequest.situation = situation.situationDesc;
-		awsLambdaRequest.userReaction = request.user_reaction;
-		awsLambdaRequest.bestReactions = new ArrayList<>();
+		if (situation == null)
+			return ResponseEntity.noContent().build();
+		AWSLambdaQuestionRequest awsLambdaQuestionRequest = new AWSLambdaQuestionRequest();
+		awsLambdaQuestionRequest.situation = situation.situationDesc;
+		awsLambdaQuestionRequest.userReaction = request.user_reaction;
+		awsLambdaQuestionRequest.bestReactions = new ArrayList<>();
 		for (ReactionMap reactionMap : reactionMaps) {
 			BestReaction bestReaction = bestReactionRepository.findById(reactionMap.bestReactionId).orElse(null);
 			if (bestReaction == null)
 				return ResponseEntity.noContent().build();
-			awsLambdaRequest.bestReactions.add(bestReaction.bestReactionDesc);
+			awsLambdaQuestionRequest.bestReactions.add(bestReaction.bestReactionDesc);
 		}
-		String requestBody = objectMapper.writeValueAsString(awsLambdaRequest);
-		System.out.println(requestBody);
+		String requestBody = objectMapper.writeValueAsString(awsLambdaQuestionRequest);
 		InvokeRequest invokeRequest = new InvokeRequest()
 			.withFunctionName("arn:aws:lambda:ap-south-1:730335373015:function:mju-team1-question")
 			.withPayload(requestBody);
@@ -90,29 +85,30 @@ public class Controller {
 		String response = new String(invokeResult.getPayload().array(), StandardCharsets.UTF_8);
 		EvaluateUserReactionResponse evaluateUserReactionResponse = new EvaluateUserReactionResponse();
 		System.out.println(response);
-		
+
 		String[] responseSplit = response.replace("\"", "").replace("\\n", "").split("/");
 		evaluateUserReactionResponse.setEvaluation(responseSplit[0]);
 		evaluateUserReactionResponse.setInjury(responseSplit[1]);
-		
-		// try {
-		
-		// 	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@2");
-		// 	System.out.println(response);
-		// 	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@2");
-		
-	 //       JSONParser jsonParser = new JSONParser();
-	 //       Object obj = jsonParser.parse(response);
-	 //       JSONObject jsonObj = (JSONObject) obj;
-			
-		// 	evaluateUserReactionResponse.setEvaluation((String)jsonObj.get("evaluation"));
-		// 	evaluateUserReactionResponse.setInjury((String)jsonObj.get("injury"));
-		// } catch(Exception e) {
-		// 	// e.printStackTrace();
-		// }
-		// response = response.replace("\\", "");
-		// evaluateUserReactionResponse.response = response;
+
 		return ResponseEntity.ok(evaluateUserReactionResponse);
-		// return ResponseEntity.ok(jsonObj);
+	}
+
+	@GetMapping("/get_best_reactions/{situationId}")
+	public String getBestReactions(@RequestParam int situationId) throws JsonProcessingException {
+		List<ReactionMap> reactionMaps = reactionMapRepository.findBySituationId(situationId);
+		AWSLambdaProposeRequest awsLambdaProposeRequest = new AWSLambdaProposeRequest();
+		awsLambdaProposeRequest.bestReactions = new ArrayList<>();
+		for (ReactionMap reactionMap : reactionMaps) {
+			BestReaction bestReaction = bestReactionRepository.findById(reactionMap.bestReactionId).orElse(null);
+			if (bestReaction == null)
+				return null;
+			awsLambdaProposeRequest.bestReactions.add(bestReaction.bestReactionDesc);
+		}
+		String requestBody = objectMapper.writeValueAsString(awsLambdaProposeRequest);
+		InvokeRequest invokeRequest = new InvokeRequest()
+			.withFunctionName("arn:aws:lambda:ap-south-1:730335373015:function:mju-team1-propose")
+			.withPayload(requestBody);
+		InvokeResult invokeResult = awsLambda.invoke(invokeRequest);
+		return new String(invokeResult.getPayload().array(), StandardCharsets.UTF_8);
 	}
 }
