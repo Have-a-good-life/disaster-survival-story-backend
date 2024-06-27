@@ -14,7 +14,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Controller {
 
-	private final BedRockService bedRockService;
 	private final DbService dbService;
 
 	@GetMapping("/health_check")
