@@ -1,10 +1,11 @@
 package com.team1.main;
 
 import com.team1.main.domain.db.application.DbService;
-import com.team1.main.domain.db.domain.Db;
+import com.team1.main.domain.db.domain.Situation;
 import com.team1.main.domain.db.dto.CreateDbRequestDto;
 import com.team1.main.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +24,17 @@ public class Controller {
 	}
 
 	@PostMapping("/data")
-	public ApiResponse<Db> createData(@RequestBody CreateDbRequestDto dto) {
+	public ApiResponse<Situation> createData(@RequestBody CreateDbRequestDto dto) {
 		return dbService.createtData(dto.toService());
 	}
 
 	@GetMapping("/data")
-	public ApiResponse<List<Db>> retrieveAllData() {
+	public ApiResponse<List<Situation>> retrieveAllData() {
 		return dbService.retrieveAllData();
+	}
+
+	@GetMapping("/getRandomSituation")
+	public ResponseEntity<Situation> retrieveRandomSituation() {
+		return dbService.retrieveRandomSituation();
 	}
 }

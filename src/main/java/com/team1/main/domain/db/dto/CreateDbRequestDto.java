@@ -1,10 +1,10 @@
 package com.team1.main.domain.db.dto;
 
 public record CreateDbRequestDto (
-    String data,
-    String description
+    String situationName,
+    String situationDesc
 ){
     public CreateDbServiceRequestDto toService() {
-        return new CreateDbServiceRequestDto(data, description);
+        return new CreateDbServiceRequestDto(situationName, situationDesc);
     }
 }

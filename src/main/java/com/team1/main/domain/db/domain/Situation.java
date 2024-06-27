@@ -12,18 +12,18 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Db {
+public class Situation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer situationId;
 
-    private String data;
+    private String situationName;
 
-    private String description;
+    private String situationDesc;
 
     @Builder
-    public Db(String data, String description) {
-        this.data = data;
-        this.description = description;
+    public Situation(String situationName, String situationDesc) {
+        this.situationName = situationName;
+        this.situationDesc = situationDesc;
     }
 }

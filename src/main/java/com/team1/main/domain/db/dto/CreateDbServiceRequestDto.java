@@ -1,19 +1,19 @@
 package com.team1.main.domain.db.dto;
 
-import com.team1.main.domain.db.domain.Db;
+import com.team1.main.domain.db.domain.Situation;
 
 public record CreateDbServiceRequestDto(
-        String data,
-        String description
+        String situationName,
+        String situationDesc
 ) {
-    public CreateDbServiceRequestDto(String data, String description) {
-        this.data = data;
-        this.description = description;
+    public CreateDbServiceRequestDto(String situationName, String situationDesc) {
+        this.situationName = situationName;
+        this.situationDesc = situationDesc;
     }
-    public Db toEntity() {
-        return Db.builder()
-                .data(data)
-                .description(description)
+    public Situation toEntity() {
+        return Situation.builder()
+                .situationName(situationName)
+                .situationDesc(situationDesc)
                 .build();
     }
 }
