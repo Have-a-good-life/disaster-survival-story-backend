@@ -1,40 +1,35 @@
 package com.team1.main;
 
-import com.team1.main.domain.db.application.DbService;
-import com.team1.main.domain.db.domain.Situation;
-import com.team1.main.domain.db.dto.CreateDbRequestDto;
-import com.team1.main.global.response.ApiResponse;
+import java.util.List;
+import java.util.Random;
+
+import com.team1.main.domain.Situation;
+import com.team1.main.repository.SituationRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1")
 @RequiredArgsConstructor
 public class Controller {
 
-	private final BedRockService bedRockService;
-	private final DbService dbService;
+	private final SituationRepository situationRepository;
 
 	@GetMapping("/health_check")
 	public String healthCheck() {
 		return "Server is OK";
 	}
 
-	@PostMapping("/data")
-	public ApiResponse<Situation> createData(@RequestBody CreateDbRequestDto dto) {
-		return dbService.createtData(dto.toService());
-	}
-
-	@GetMapping("/data")
-	public ApiResponse<List<Situation>> retrieveAllData() {
-		return dbService.retrieveAllData();
-	}
-
-	@GetMapping("/getRandomSituation")
-	public ResponseEntity<Situation> retrieveRandomSituation() {
-		return dbService.retrieveRandomSituation();
+	@GetMapping("/get_random_situation")
+	public ResponseEntity<Situation> getRandomSituation() {
+		List<Situation> situations = situationRepository.findAll();
+		if (situations.isEmpty())
+			return ResponseEntity.noContent().build();
+		int randomIndex = new Random().nextInt(situations.size());
+		Situation situation = situations.get(randomIndex);
+		return ResponseEntity.ok(situation);
 	}
 }
