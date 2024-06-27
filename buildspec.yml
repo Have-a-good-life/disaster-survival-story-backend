@@ -6,6 +6,7 @@ phases:
       java: corretto17
     commands:
       - echo Install phase
+      - chmod +x ./gradlew  # 실행 권한 설정
 
   pre_build:
     commands:
