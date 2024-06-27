@@ -4,7 +4,7 @@ phases:
   install:
     runtime-versions:
       java: corretto17
-      gradle: 8.3
+      gradle: 7.4.3
     commands:
       - echo Install phase
   pre_build:
