@@ -4,11 +4,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 @Entity
-public class Situation {
+public class ReactionMap {
 	@Id
-	public Integer situationId;
+	public int reactionMapId;
+	public int situationId;
+	public int bestReactionId;
 
-	public String situationName;
-
-	public String situationDesc;
 }
