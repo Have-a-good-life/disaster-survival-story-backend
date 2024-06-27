@@ -5,6 +5,10 @@ import com.team1.main.domain.db.domain.Db;
 import com.team1.main.domain.db.dto.CreateDbRequestDto;
 import com.team1.main.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +27,19 @@ public class Controller {
 
 	@PostMapping("/data")
 	public ApiResponse<Db> createData(@RequestBody CreateDbRequestDto dto) {
+
+		String[] responseSplit = "response".substring(1,-1).split("/");
+		try {
+			//2. Parser
+			JSONParser jsonParser = new JSONParser();
+
+			//3. To Object
+			Object obj = jsonParser.parse(strJson);
+		} catch(Exception e) {
+				e.printStackTrace();
+		}
+		//4. To JsonObject
+		JSONObject jsonObj = (JSONObject) obj;
 		return dbService.createtData(dto.toService());
 	}
 
