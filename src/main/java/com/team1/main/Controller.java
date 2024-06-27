@@ -24,12 +24,17 @@ import com.team1.main.response.EvaluateUserReactionResponse;
 
 import lombok.RequiredArgsConstructor;
 
+import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONObject;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/v1")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class Controller {
 
 	private final SituationRepository situationRepository;
@@ -37,7 +42,7 @@ public class Controller {
 	private final BestReactionRepository bestReactionRepository;
 
 	private final AWSLambda awsLambda = AWSLambdaClientBuilder.standard()
-		.withRegion(Regions.US_EAST_1)
+		.withRegion(Regions.AP_SOUTH_1)
 		.build();
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -85,7 +90,30 @@ public class Controller {
 		InvokeResult invokeResult = awsLambda.invoke(invokeRequest);
 		String response = new String(invokeResult.getPayload().array(), StandardCharsets.UTF_8);
 		EvaluateUserReactionResponse evaluateUserReactionResponse = new EvaluateUserReactionResponse();
-		evaluateUserReactionResponse.response = response;
+		System.out.println(response);
+		
+		String[] responseSplit = response.replace("\"", "").replace("\\n", "").split("/");
+		evaluateUserReactionResponse.setEvaluation(responseSplit[0]);
+		evaluateUserReactionResponse.setInjury(responseSplit[1]);
+		
+		// try {
+		
+		// 	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@2");
+		// 	System.out.println(response);
+		// 	System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@2");
+		
+	 //       JSONParser jsonParser = new JSONParser();
+	 //       Object obj = jsonParser.parse(response);
+	 //       JSONObject jsonObj = (JSONObject) obj;
+			
+		// 	evaluateUserReactionResponse.setEvaluation((String)jsonObj.get("evaluation"));
+		// 	evaluateUserReactionResponse.setInjury((String)jsonObj.get("injury"));
+		// } catch(Exception e) {
+		// 	// e.printStackTrace();
+		// }
+		// response = response.replace("\\", "");
+		// evaluateUserReactionResponse.response = response;
 		return ResponseEntity.ok(evaluateUserReactionResponse);
+		// return ResponseEntity.ok(jsonObj);
 	}
 }
