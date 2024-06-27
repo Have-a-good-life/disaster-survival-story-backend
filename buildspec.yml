@@ -25,5 +25,3 @@ artifacts:
     - build/libs/*.war
   discard-paths: yes
   base-directory: build/libs
-  name: myapp-artifact
-  destination: s3://team1_spring_pipe/path/to/artifacts/
