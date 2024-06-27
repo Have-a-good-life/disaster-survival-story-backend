@@ -12,8 +12,10 @@ import com.amazonaws.services.lambda.model.InvokeRequest;
 import com.amazonaws.services.lambda.model.InvokeResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team1.main.domain.BestReaction;
 import com.team1.main.domain.ReactionMap;
 import com.team1.main.domain.Situation;
+import com.team1.main.repository.BestReactionRepository;
 import com.team1.main.repository.ReactionMapRepository;
 import com.team1.main.repository.SituationRepository;
 import com.team1.main.response.AWSLambdaRequest;
@@ -32,6 +34,7 @@ public class Controller {
 
 	private final SituationRepository situationRepository;
 	private final ReactionMapRepository reactionMapRepository;
+	private final BestReactionRepository bestReactionRepository;
 
 	private final AWSLambda awsLambda = AWSLambdaClientBuilder.standard()
 		.withRegion(Regions.US_EAST_1)
@@ -44,6 +47,7 @@ public class Controller {
 	}
 
 	@GetMapping("/get_random_situation")
+	@ResponseBody
 	public ResponseEntity<Situation> getRandomSituation() {
 		List<Situation> situations = situationRepository.findAll();
 		if (situations.isEmpty())
@@ -54,19 +58,27 @@ public class Controller {
 	}
 
 	@PostMapping("/evaluate_user_reaction")
+	@ResponseBody
 	public ResponseEntity<EvaluateUserReactionResponse> evaluateUserReaction(
 		@RequestBody EvaluateUserReactionRequest request) throws JsonProcessingException {
-		List<ReactionMap> reactionMaps = reactionMapRepository.findBySituationId(request.situationId);
-		Situation situation = situationRepository.findById(request.situationId).orElse(null);
+		System.out.println(request.situation_id);
+		System.out.println(request.user_reaction);
+		List<ReactionMap> reactionMaps = reactionMapRepository.findBySituationId(request.situation_id);
+		Situation situation = situationRepository.findById(request.situation_id).orElse(null);
 		if (situation == null)
 			return ResponseEntity.noContent().build();
 		AWSLambdaRequest awsLambdaRequest = new AWSLambdaRequest();
 		awsLambdaRequest.situation = situation.situationDesc;
-		awsLambdaRequest.userReaction = request.userReaction;
+		awsLambdaRequest.userReaction = request.user_reaction;
 		awsLambdaRequest.bestReactions = new ArrayList<>();
-		for (ReactionMap reactionMap : reactionMaps)
-			awsLambdaRequest.bestReactions.add("OK");
-		String requestBody = objectMapper.writeValueAsString(request);
+		for (ReactionMap reactionMap : reactionMaps) {
+			BestReaction bestReaction = bestReactionRepository.findById(reactionMap.bestReactionId).orElse(null);
+			if (bestReaction == null)
+				return ResponseEntity.noContent().build();
+			awsLambdaRequest.bestReactions.add(bestReaction.bestReactionDesc);
+		}
+		String requestBody = objectMapper.writeValueAsString(awsLambdaRequest);
+		System.out.println(requestBody);
 		InvokeRequest invokeRequest = new InvokeRequest()
 			.withFunctionName("arn:aws:lambda:ap-south-1:730335373015:function:mju-team1-question")
 			.withPayload(requestBody);
