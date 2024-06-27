@@ -1,4 +1,4 @@
-package com.team1.main.global.config;
+package com.team1.main.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
