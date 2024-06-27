@@ -6,17 +6,15 @@ phases:
       java: corretto17
     commands:
       - echo Install phase
+
   pre_build:
     commands:
       - echo Pre-Build phase
+
   build:
     commands:
       - echo Build Starting on `date`
-      - chmod +x ./gradlew
-      - ./gradlew build
-  post_build:
-    commands:
-      - echo Post-Build phase
+      - ./gradlew clean build -x test
 
 artifacts:
   files:
