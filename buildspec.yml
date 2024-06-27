@@ -20,3 +20,7 @@ phases:
 artifacts:
   files:
     - build/libs/*.war
+  discard-paths: yes
+  base-directory: build/libs
+  # S3 버킷 이름과 경로를 지정합니다.
+  destination: s3://team1_spring_pipe/path/to/artifacts/

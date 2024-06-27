@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 
 files:
-  - source: build/libs/*.war
+  - source: /
     destination: /home/ec2-user/app
     overwrite: yes
 
@@ -13,11 +13,11 @@ permissions:
     group: ec2-user
 
 hooks:
-  AfterInstall:
+  BeforeInstall:
     - location: scripts/stop.sh
       timeout: 60
       runas: ec2-user
-  ApplicationStart:
+  AfterInstall:
     - location: scripts/start.sh
       timeout: 60
       runas: ec2-user
