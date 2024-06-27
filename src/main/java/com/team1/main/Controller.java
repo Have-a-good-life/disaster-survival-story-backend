@@ -65,8 +65,7 @@ public class Controller {
 		System.out.println(request.user_reaction);
 		List<ReactionMap> reactionMaps = reactionMapRepository.findBySituationId(request.situation_id);
 		Situation situation = situationRepository.findById(request.situation_id).orElse(null);
-		if (situation == null)
-			return ResponseEntity.noContent().build();
+		if (situation == null) return ResponseEntity.noContent().build();
 		AWSLambdaRequest awsLambdaRequest = new AWSLambdaRequest();
 		awsLambdaRequest.situation = situation.situationDesc;
 		awsLambdaRequest.userReaction = request.user_reaction;
