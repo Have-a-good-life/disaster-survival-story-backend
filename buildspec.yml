@@ -6,7 +6,6 @@ phases:
       java: corretto17
     commands:
       - echo Install phase
-      - chmod +x ./gradlew  # 실행 권한 설정
 
   pre_build:
     commands:
@@ -15,12 +14,16 @@ phases:
   build:
     commands:
       - echo Build Starting on `date`
+      - chmod +x ./gradlew  # 실행 권한 설정
       - ./gradlew clean build -x test
+  post_build:
+    commands:
+      - echo Post-Build phase
 
 artifacts:
   files:
     - build/libs/*.war
   discard-paths: yes
   base-directory: build/libs
-  # S3 버킷 이름과 경로를 지정합니다.
+  name: myapp-artifact
   destination: s3://team1_spring_pipe/path/to/artifacts/
