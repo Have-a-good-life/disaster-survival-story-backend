@@ -4,7 +4,6 @@ phases:
   install:
     runtime-versions:
       java: corretto17
-      gradle: 7.4.3
     commands:
       - echo Install phase
   pre_build:
@@ -12,9 +11,9 @@ phases:
       - echo Pre-Build phase
   build:
     commands:
-      - echo Build started on `date`
-      - mvn clean package -DskipTests
-      - echo Build completed on `date`
+      - echo Build Starting on `date`
+      - chmod +x ./gradlew
+      - ./gradlew build
   post_build:
     commands:
       - echo Post-Build phase
