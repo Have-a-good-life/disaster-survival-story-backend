@@ -23,5 +23,3 @@ phases:
 artifacts:
   files:
     - build/libs/*.war
-  discard-paths: yes
-  base-directory: build/libs
