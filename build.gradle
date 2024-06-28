@@ -24,6 +24,24 @@ dependencies {
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	implementation platform('software.amazon.awssdk:bom:2.26.3')
+	implementation 'software.amazon.awssdk:bedrockruntime'
+	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
+	implementation group: 'org.json', name: 'json', version: '20240303'
+
+
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// MySQL
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'com.amazonaws:aws-java-sdk-lambda:1.12.450'
+
 }
 
 tasks.named('test') {
