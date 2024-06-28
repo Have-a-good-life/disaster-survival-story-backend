@@ -22,6 +22,7 @@ import com.team1.main.response.AWSLambdaProposeRequest;
 import com.team1.main.response.AWSLambdaQuestionRequest;
 import com.team1.main.response.EvaluateUserReactionRequest;
 import com.team1.main.response.EvaluateUserReactionResponse;
+import com.team1.main.service.InspectionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,6 +38,8 @@ public class Controller {
 	private final SituationRepository situationRepository;
 	private final ReactionMapRepository reactionMapRepository;
 	private final BestReactionRepository bestReactionRepository;
+
+	private final InspectionService inspectionService;
 
 	private final AWSLambda awsLambda = AWSLambdaClientBuilder.standard()
 		.withRegion(Regions.AP_SOUTH_1)
@@ -71,30 +74,44 @@ public class Controller {
 		awsLambdaQuestionRequest.situation = situation.situationDesc;
 		awsLambdaQuestionRequest.userReaction = request.user_reaction;
 		awsLambdaQuestionRequest.bestReactions = new ArrayList<>();
+		EvaluateUserReactionResponse evaluateUserReactionResponse = new EvaluateUserReactionResponse();
+		String inspectionResult = null;
+		if ((inspectionResult = inspectionService.inspectUserReaction(request.user_reaction)) != null) {
+			evaluateUserReactionResponse.setEvaluation(inspectionResult);
+			evaluateUserReactionResponse.setInjury("사망");
+			return ResponseEntity.ok(evaluateUserReactionResponse);
+		}
 		for (ReactionMap reactionMap : reactionMaps) {
 			BestReaction bestReaction = bestReactionRepository.findById(reactionMap.bestReactionId).orElse(null);
 			if (bestReaction == null)
 				return ResponseEntity.noContent().build();
 			awsLambdaQuestionRequest.bestReactions.add(bestReaction.bestReactionDesc);
 		}
-		String requestBody = objectMapper.writeValueAsString(awsLambdaQuestionRequest);
-		InvokeRequest invokeRequest = new InvokeRequest()
-			.withFunctionName("arn:aws:lambda:ap-south-1:730335373015:function:mju-team1-question")
-			.withPayload(requestBody);
-		InvokeResult invokeResult = awsLambda.invoke(invokeRequest);
-		String response = new String(invokeResult.getPayload().array(), StandardCharsets.UTF_8);
-		EvaluateUserReactionResponse evaluateUserReactionResponse = new EvaluateUserReactionResponse();
-		System.out.println(response);
 
-		String[] responseSplit = response.replace("\"", "").replace("\\n", "").split("/");
-		evaluateUserReactionResponse.setEvaluation(responseSplit[0]);
-		evaluateUserReactionResponse.setInjury(responseSplit[1]);
+		String evaluation = null;
+		String injury = null;
+		String requestBody = objectMapper.writeValueAsString(awsLambdaQuestionRequest);
+
+		do {
+			InvokeRequest invokeRequest = new InvokeRequest()
+				.withFunctionName("arn:aws:lambda:ap-south-1:730335373015:function:mju-team1-question")
+				.withPayload(requestBody);
+			InvokeResult invokeResult = awsLambda.invoke(invokeRequest);
+			String response = new String(invokeResult.getPayload().array(), StandardCharsets.UTF_8);
+			System.out.println(response);
+			String[] responseSplit = response.replace("\"", "").replace("\\n", "").split("/");
+			evaluation = responseSplit[0];
+			injury = responseSplit[1];
+		} while (!inspectionService.inspectEvaluation(evaluation) || !inspectionService.inspectInjury(injury));
+
+		evaluateUserReactionResponse.setEvaluation(evaluation);
+		evaluateUserReactionResponse.setInjury(injury);
 
 		return ResponseEntity.ok(evaluateUserReactionResponse);
 	}
 
 	@GetMapping("/get_best_reactions/{situationId}")
-	public String getBestReactions(@RequestParam int situationId) throws JsonProcessingException {
+	public String getBestReactions(@PathVariable int situationId) throws JsonProcessingException {
 		List<ReactionMap> reactionMaps = reactionMapRepository.findBySituationId(situationId);
 		AWSLambdaProposeRequest awsLambdaProposeRequest = new AWSLambdaProposeRequest();
 		awsLambdaProposeRequest.bestReactions = new ArrayList<>();
