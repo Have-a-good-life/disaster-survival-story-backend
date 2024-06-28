@@ -92,6 +92,7 @@ public class Controller {
 		String injury = null;
 		String requestBody = objectMapper.writeValueAsString(awsLambdaQuestionRequest);
 
+		int loopCount = 0;
 		do {
 			InvokeRequest invokeRequest = new InvokeRequest()
 				.withFunctionName("arn:aws:lambda:ap-south-1:730335373015:function:mju-team1-question")
@@ -102,6 +103,12 @@ public class Controller {
 			String[] responseSplit = response.replace("\"", "").replace("\\n", "").split("/");
 			evaluation = responseSplit[0];
 			injury = responseSplit[1];
+			++loopCount;
+			if (loopCount == 5) {
+				evaluateUserReactionResponse.setEvaluation("현재 AI 응답이 원활하지 않습니다, 다음에 다시 시도해주세요.");
+				evaluateUserReactionResponse.setInjury("사망");
+				return ResponseEntity.internalServerError(evaluateUserReactionResponse);
+			}
 		} while (!inspectionService.inspectEvaluation(evaluation) || !inspectionService.inspectInjury(injury));
 
 		evaluateUserReactionResponse.setEvaluation(evaluation);

@@ -12,7 +12,7 @@ public class InspectionService {
 	}
 
 	public boolean inspectEvaluation(String evaluation) {
-		if (evaluation.length() < 200) {
+		if (evaluation.length() > 200) {
 			return false;
 		}
 		return true;
