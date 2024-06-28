@@ -107,7 +107,7 @@ public class Controller {
 			if (loopCount == 5) {
 				evaluateUserReactionResponse.setEvaluation("현재 AI 응답이 원활하지 않습니다, 다음에 다시 시도해주세요.");
 				evaluateUserReactionResponse.setInjury("사망");
-				return ResponseEntity.internalServerError(evaluateUserReactionResponse);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(evaluateUserReactionResponse);
 			}
 		} while (!inspectionService.inspectEvaluation(evaluation) || !inspectionService.inspectInjury(injury));
 
